@@ -16,27 +16,27 @@
 def _pip_import_impl(repository_ctx, binary_name):
   """Core implementation of pip_import."""
 
-    # Add an empty top-level BUILD file.
-    # This is because Bazel requires BUILD files along all paths accessed
-    # via //this/sort/of:path and we wouldn't be able to load our generated
-    # requirements.bzl without it.
-    repository_ctx.file("BUILD", "")
+  # Add an empty top-level BUILD file.
+  # This is because Bazel requires BUILD files along all paths accessed
+  # via //this/sort/of:path and we wouldn't be able to load our generated
+  # requirements.bzl without it.
+  repository_ctx.file("BUILD", "")
 
-    # To see the output, pass: quiet=False
-    result = repository_ctx.execute([
-        binary_name, repository_ctx.path(repository_ctx.attr._script),
-        "--name", repository_ctx.attr.name,
-        "--input", repository_ctx.path(repository_ctx.attr.requirements),
-        "--output", repository_ctx.path("requirements.bzl"),
-        "--directory", repository_ctx.path(""),
-    ], quiet=False)
+  # To see the output, pass: quiet=False
+  result = repository_ctx.execute([
+    binary_name, repository_ctx.path(repository_ctx.attr._script),
+    "--name", repository_ctx.attr.name,
+    "--input", repository_ctx.path(repository_ctx.attr.requirements),
+    "--output", repository_ctx.path("requirements.bzl"),
+    "--directory", repository_ctx.path("")
+  ], quiet=False)
 
-    if result.return_code:
-        fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
+  if result.return_code:
+    fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
 
 def _pip_system_import_impl(repository_ctx):
   """System python implementation."""
-  _pip_import_impl(repository_ctx, "python")
+  _pip_import_impl(repository_ctx, "python2")
 
 def _pip3_import_impl(repository_ctx):
   """Python 3 implementation."""
@@ -45,8 +45,8 @@ def _pip3_import_impl(repository_ctx):
 pip_import = repository_rule(
     attrs = {
         "requirements": attr.label(
+            allow_files = True,
             mandatory = True,
-            allow_single_file = True,
         ),
         "_script": attr.label(
             executable = True,
@@ -104,7 +104,6 @@ pip3_import = repository_rule(
         "requirements": attr.label(
             allow_files = True,
             mandatory = True,
-            single_file = True,
         ),
         "_script": attr.label(
             executable = True,
